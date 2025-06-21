@@ -7,8 +7,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-visualizer',
-  standalone: true,
-  imports: [],
   templateUrl: './visualizer.component.html',
   styleUrls: ['./visualizer.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -118,7 +116,7 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
 
   private drawVisualizationFrame(
     analyserNode: AnalyserNode,
-    dataArray: Uint8Array,
+    dataArray: Uint8Array<any>,
     canvasCtx: CanvasRenderingContext2D
   ): void {
     analyserNode.getByteTimeDomainData(dataArray);
@@ -144,10 +142,7 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
     canvasCtx.stroke();
   }
 
-  private stopVisualization(): void {
-    // animationSubscription is no longer needed to be manually unsubscribed here
-    // takeWhile and takeUntilDestroyed handle the subscription's lifecycle.
-    
+  private stopVisualization(): void {    
     if (this.canvasCtx) {
       const canvas = this.canvasCtx.canvas;
       this.canvasCtx.fillStyle = 'rgb(55, 65, 81)'; // bg-gray-700
@@ -177,7 +172,6 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    // No need to manually unsubscribe from animationSubscription thanks to takeUntilDestroyed.
     this.cleanupAudioNodes();
   }
 }

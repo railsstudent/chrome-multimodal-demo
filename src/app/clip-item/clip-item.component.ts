@@ -5,7 +5,6 @@ import { AudioClip } from '../types';
 
 @Component({
   selector: 'app-clip-item',
-  standalone: true,
   imports: [SafeUrlPipe, DatePipe], 
   templateUrl: './clip-item.component.html',
   styleUrls: ['./clip-item.component.css'],

@@ -1,10 +1,7 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
-// import { CommonModule } from '@angular/common'; // CommonModule removed
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-record-control',
-  standalone: true,
-  imports: [/* CommonModule removed */],
   templateUrl: './record-control.component.html',
   styleUrls: ['./record-control.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

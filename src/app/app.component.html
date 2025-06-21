@@ -8,6 +8,8 @@
 
   <main class="w-full max-w-2xl bg-gray-800 shadow-2xl rounded-xl p-6 sm:p-8 space-y-8">
     <section class="controls-area text-center space-y-6">
+      <app-visualizer [mediaStream]="mediaStream()" [isRecording]="isRecording()"></app-visualizer>
+
       <app-permission-check
         [permissionStatus]="permissionStatus()"
         [recorderError]="recorderError()"
@@ -20,9 +22,7 @@
           (start)="startRecording()"
           (stop)="stopRecording()">
         </app-record-control>
-      }
-      
-      <app-visualizer [mediaStream]="mediaStream()" [isRecording]="isRecording()"></app-visualizer>
+      }      
     </section>
 
     <section class="clips-area">

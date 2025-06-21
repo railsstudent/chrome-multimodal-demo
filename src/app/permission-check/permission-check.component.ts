@@ -3,8 +3,6 @@ import { PermissionStatus } from '../services/audio-recorder.service';
 
 @Component({
   selector: 'app-permission-check',
-  standalone: true,
-  imports: [],
   templateUrl: './permission-check.component.html',
   styleUrls: ['./permission-check.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

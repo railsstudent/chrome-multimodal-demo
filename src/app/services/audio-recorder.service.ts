@@ -31,10 +31,17 @@ export class AudioRecorderService {
     });
   }
 
-  async checkPermission(): Promise<void> {
+  private denyUserMedia() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       this.error.set("getUserMedia not supported on your browser!");
       this.permissionStatus.set('denied');
+      return true
+    }
+    return false
+  }
+
+  async checkPermission(): Promise<void> {
+    if (this.denyUserMedia()) { 
       return;
     }
     try {
@@ -53,9 +60,7 @@ export class AudioRecorderService {
   }
 
   async requestPermission(): Promise<void> {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      this.error.set("getUserMedia not supported on your browser!");
-      this.permissionStatus.set('denied');
+    if (this.denyUserMedia()) { 
       return;
     }
     try {
@@ -72,9 +77,11 @@ export class AudioRecorderService {
   }
 
   async startRecording(): Promise<void> {
-    if (this.isRecording()) return;
+    if (this.isRecording()) { 
+      return;
+    }
     
-    untracked(() => this.error.set('')); // Clear previous errors, changed from null
+    untracked(() => this.error.set(''));
 
     if (this.permissionStatus() !== 'granted') {
       await this.requestPermission();
@@ -141,7 +148,6 @@ export class AudioRecorderService {
     this.mediaStream.set(null);
     this.isRecording.set(false);
     this.mediaRecorderRef = null;
-    // this.audioChunks = []; // Cleared on next recording or handled by onstop creating blob
   }
 
   // Call this method if the service itself is destroyed, though for root services it's app lifetime

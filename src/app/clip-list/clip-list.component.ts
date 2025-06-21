@@ -4,7 +4,6 @@ import { AudioClip } from '../types';
 
 @Component({
   selector: 'app-clip-list',
-  standalone: true,
   imports: [ClipItemComponent],
   templateUrl: './clip-list.component.html',
   styleUrls: ['./clip-list.component.css'],
