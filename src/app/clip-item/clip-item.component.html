@@ -1,0 +1,19 @@
+<div class="bg-gray-700 p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0 sm:space-x-4 transition-all hover:bg-gray-600/70">
+  <div class="flex-grow w-full sm:w-auto">
+    <p class="font-medium text-indigo-300 truncate" [title]="clip().name">{{ clip().name }}</p>
+    <p class="text-xs text-gray-400">
+      Recorded: {{ clip().createdAt | date:'short' }}
+    </p>
+  </div>
+  <audio controls [src]="clip().url | safeUrl" class="w-full sm:w-auto rounded-md shadow-sm" [title]="'Play ' + clip().name"></audio>
+  @let title = `Delete clip ${clip().name}`; 
+  <button
+    (click)="handleDelete()"
+    title="{{ title }}"
+    [attr.aria-label]="title"
+    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md shadow-sm transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+  >
+    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+    <span class="sr-only">Delete</span>
+  </button>
+</div>

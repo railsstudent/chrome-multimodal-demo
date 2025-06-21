@@ -1,0 +1,27 @@
+@if (permissionStatus() === 'prompt') {
+  <button
+    (click)="onRequestPermissionClick()"
+    class="px-8 py-4 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold rounded-lg shadow-md transition-all duration-150 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:ring-opacity-50 flex items-center justify-center mx-auto"
+    aria-label="Request microphone access"
+  >
+    <i class="fas fa-microphone-alt mr-3"></i> Request Microphone Access
+  </button>
+}
+@if (permissionStatus() === 'denied') {
+  <div class="p-4 bg-red-700 text-red-100 rounded-lg shadow-md" role="alert">
+    <i class="fas fa-exclamation-triangle mr-2"></i>
+    Microphone access denied. Please enable it in your browser settings to use the recorder.
+  </div>
+}
+@if (recorderError(); as errorMsg) {
+  <!-- Show general error if:
+       1. There is an error message.
+       2. AND (EITHER permission is NOT denied OR (permission IS denied AND the error is NOT the generic "denied" message))
+       This avoids showing the generic "Microphone permission denied." when the specific denied banner is already visible. -->
+  @if (errorMsg && (permissionStatus() !== 'denied' || (permissionStatus() === 'denied' && errorMsg !== 'Microphone permission denied.'))) {
+   <div class="p-4 bg-red-700 text-red-100 rounded-lg shadow-md" role="alert">
+      <i class="fas fa-exclamation-circle mr-2"></i>
+      Error: {{ errorMsg }}
+    </div>
+  }
+}

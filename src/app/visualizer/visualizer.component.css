@@ -1,0 +1,4 @@
+/* VisualizerComponent specific styles */
+canvas {
+  display: block; /* Ensures canvas takes full width of parent if w-full is used */
+}

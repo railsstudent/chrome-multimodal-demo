@@ -1,0 +1,20 @@
+@if (clips().length === 0) {
+  <div class="text-center py-8 text-gray-500">
+    <i class="fas fa-folder-open fa-3x mb-3" aria-hidden="true"></i>
+    <p class="text-xl">No audio clips recorded yet.</p>
+    <p>Press the record button to start.</p>
+  </div>
+} @else {
+  <div class="space-y-4">
+    <h2 class="text-2xl font-semibold text-indigo-300 border-b-2 border-indigo-500 pb-2 mb-6">
+      <i class="fas fa-list-ul mr-2" aria-hidden="true"></i>Recorded Clips
+    </h2>
+    <ul class="space-y-3" aria-label="List of recorded audio clips">
+      @for (clip of clips(); track clip.id) {
+        <li>
+          <app-clip-item [clip]="clip" (delete)="onDeleteClip($event)"></app-clip-item>
+        </li>
+      }
+    </ul>
+  </div>
+}

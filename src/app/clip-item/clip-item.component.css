@@ -1,0 +1,4 @@
+/* ClipItemComponent specific styles */
+audio {
+  filter: invert(1) hue-rotate(180deg) contrast(0.8) saturate(1.5); /* Basic styling to make default audio player fit dark theme better */
+}
