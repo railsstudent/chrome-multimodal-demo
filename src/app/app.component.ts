@@ -1,10 +1,10 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, linkedSignal } from '@angular/core';
 import { ClipListComponent } from './clip-list/clip-list.component';
 import { PermissionCheckComponent } from './permission-check/permission-check.component';
 import { RecordControlComponent } from './record-control/record-control.component';
-import { VisualizerComponent } from './visualizer/visualizer.component';
 import { AudioRecorderService } from './services/audio-recorder.service';
 import { AudioClip } from './types';
+import { VisualizerComponent } from './visualizer/visualizer.component';
 
 @Component({
   selector: 'app-root',
@@ -15,35 +15,37 @@ import { AudioClip } from './types';
     PermissionCheckComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
   private audioRecorderService = inject(AudioRecorderService);
-
-  audioClips = signal([] as AudioClip[]);
   
-  isRecording = this.audioRecorderService.isRecording.asReadonly();
-  mediaStream = this.audioRecorderService.mediaStream.asReadonly();
-  recorderError = this.audioRecorderService.error.asReadonly();
-  permissionStatus = this.audioRecorderService.permissionStatus.asReadonly();
+  isRecording = this.audioRecorderService.isRecording;
+  mediaStream = this.audioRecorderService.mediaStream;
+  recorderError = this.audioRecorderService.error;
+  permissionStatus = this.audioRecorderService.permissionStatus;
 
   fullYear = new Date().getFullYear();
 
-  constructor() {
-    effect(() => {
-      const newBlob = this.audioRecorderService.newClipRecorded();
+  audioClips = linkedSignal<Blob | null, AudioClip[]>({
+    source: this.audioRecorderService.newClipRecorded,
+    computation: (newBlob, previous) => {
+      const previousClips = previous?.value || [];
       if (newBlob) {
+        const id = crypto.randomUUID();
         const newClip: AudioClip = {
-          id: crypto.randomUUID(),
-          name: `clip-${new Date().toISOString().replace(/[:.]/g, '-')}`,
+          id,
+          name: `clip-${id}`,
           url: URL.createObjectURL(newBlob),
           blob: newBlob,
           createdAt: new Date(),
         };
-        this.audioClips.update(clips => [newClip, ...clips]);
+        return [newClip, ...previousClips];
       }
-    });
-  }
+      return previousClips;
+    }
+  });
 
   requestAudioPermission(): void {
     this.audioRecorderService.requestPermission();
@@ -58,15 +60,12 @@ export class AppComponent {
   }
 
   deleteClip(id: string): void {
-    this.audioClips.update(clips =>
-      clips.filter(clip => {
-        if (clip.id === id) {
-          URL.revokeObjectURL(clip.url); // Clean up blob URL
-          return false;
-        }
-        return true;
-      })
-    );
+    const idx = this.audioClips().findIndex((clip) => clip.id === id);
+    const clip = idx >= 0 ? this.audioClips()[idx] : undefined;    
+    this.audioClips.update(clips => clips.filter(clip => clip.id === id));
+    if (clip) {
+      URL.revokeObjectURL(clip.url); // Clean up blob URL
+    }
   }
 
   ngOnDestroy(): void {

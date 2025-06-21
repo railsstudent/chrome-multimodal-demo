@@ -1,5 +1,4 @@
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
-import { PermissionStatus } from '../services/audio-recorder.service';
 
 @Component({
   selector: 'app-permission-check',
@@ -8,7 +7,7 @@ import { PermissionStatus } from '../services/audio-recorder.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PermissionCheckComponent {
-  permissionStatus = input.required<PermissionStatus>();
+  permissionStatus = input.required<PermissionState>();
   recorderError = input.required<string>();
   requestPermission = output<void>(); // Renamed for parent binding clarity
 
