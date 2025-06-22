@@ -10,31 +10,7 @@
   </header>
 
   <main class="w-full max-w-4xl bg-gray-800 shadow-2xl rounded-xl p-6 sm:p-8 space-y-8">
-    <section class="controls-area text-center space-y-6">
-      <app-visualizer [mediaStream]="mediaStream()" [isRecording]="isRecording()"></app-visualizer>
-
-      <app-permission-check
-        [permissionStatus]="permissionStatus()"
-        [recorderError]="recorderError()"
-        (requestPermission)="requestAudioPermission()" />
-      
-      @if (permissionStatus() === 'granted') {
-        <app-record-control
-          [isRecording]="isRecording()"
-          (start)="startRecording()"
-          (stop)="stopRecording()" />
-      }      
-    </section>
-
-    <section class="clips-area">
-      <app-clip-list [clips]="audioClips()" (deleteClip)="deleteClip($event)" 
-        [(selectedClip)]="selectedClip"
-      />
-    </section>
-
-    @if (selectedClip(); as selectedClip) {
-      {{ `Transcribe ${selectedClip.name}`}}
-    }
+    <app-web-dictaphone />
   </main>
   <footer class="mt-12 text-center text-gray-500 text-sm">
     <p>&copy; {{ fullYear }} Angular Web Dictaphone. Crafted with <i class="fas fa-heart text-red-500"></i>.</p>
