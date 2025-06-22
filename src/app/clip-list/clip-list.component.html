@@ -12,7 +12,10 @@
     <ul class="space-y-3" aria-label="List of recorded audio clips">
       @for (clip of clips(); track clip.id) {
         <li>
-          <app-clip-item [clip]="clip" (delete)="onDeleteClip($event)"></app-clip-item>
+          <app-clip-item [clip]="clip" (delete)="onDeleteClip($event)" 
+            (selectAudio)="onSelectAudio($event)"
+            [isChecked]="selectedClipId() === clip.id"
+          />
         </li>
       }
     </ul>

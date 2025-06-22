@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { ClipItemComponent } from '../clip-item/clip-item.component';
 import { AudioClip } from '../types';
 
@@ -11,8 +11,13 @@ import { AudioClip } from '../types';
 export class ClipListComponent {
   clips = input.required<AudioClip[]>();
   deleteClip = output<string>();
+  selectedClipId = signal('');
 
-  onDeleteClip(id: string): void {
-    this.deleteClip.emit(id);
+  onDeleteClip(clipId: string): void {
+    this.deleteClip.emit(clipId);
+  }
+
+  onSelectAudio(clipId: string) {
+    this.selectedClipId.set(clipId);
   }
 }

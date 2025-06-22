@@ -1,4 +1,7 @@
 <div class="bg-gray-700 p-4 rounded-lg shadow-md flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0 sm:space-x-4 transition-all hover:bg-gray-600/70">
+  <input type="radio" id="select_audio" name="select_audio" 
+    [checked]="isChecked()"
+    (click)="selectThisAudio()" />
   <div class="flex-grow w-full sm:w-auto">
     <p class="font-medium text-indigo-300 truncate" [title]="clip().name">{{ clip().name }}</p>
     <p class="text-xs text-gray-400">

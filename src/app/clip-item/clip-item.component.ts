@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common'; // Import DatePipe
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { SafeUrlPipe } from '../safe-url.pipe'; // Import SafeUrlPipe
 import { AudioClip } from '../types';
 
@@ -13,8 +13,15 @@ import { AudioClip } from '../types';
 export class ClipItemComponent {
   clip = input.required<AudioClip>();
   delete = output<string>();
+  selectAudio = output<string>();
+  isChecked = input(false);
 
   handleDelete(): void {
     this.delete.emit(this.clip().id);
+  }
+
+  selectThisAudio() {
+    console.log('selectThisAudio', this.clip().id);
+    this.selectAudio.emit(this.clip().id);
   }
 }

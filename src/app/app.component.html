@@ -16,20 +16,18 @@
       <app-permission-check
         [permissionStatus]="permissionStatus()"
         [recorderError]="recorderError()"
-        (requestPermission)="requestAudioPermission()">
-      </app-permission-check>
+        (requestPermission)="requestAudioPermission()" />
       
       @if (permissionStatus() === 'granted') {
         <app-record-control
           [isRecording]="isRecording()"
           (start)="startRecording()"
-          (stop)="stopRecording()">
-        </app-record-control>
+          (stop)="stopRecording()" />
       }      
     </section>
 
     <section class="clips-area">
-      <app-clip-list [clips]="audioClips()" (deleteClip)="deleteClip($event)"></app-clip-list>
+      <app-clip-list [clips]="audioClips()" (deleteClip)="deleteClip($event)" />
     </section>
   </main>
   <footer class="mt-12 text-center text-gray-500 text-sm">
