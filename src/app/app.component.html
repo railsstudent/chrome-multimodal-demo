@@ -9,9 +9,21 @@
     <p class="text-gray-400 mt-2 text-lg">Record, Visualize, Play, Manage, and Transcribe Your Audio Clips.</p>
   </header>
 
-  <main class="w-full max-w-4xl bg-gray-800 shadow-2xl rounded-xl p-6 sm:p-8 space-y-8">
+  <!-- <main class="w-full max-w-4xl bg-gray-800 shadow-2xl rounded-xl p-6 sm:p-8 space-y-8">
     <app-web-dictaphone />
-  </main>
+  </main> -->
+
+  @let btnSetupText = showSetup() ? 'Hide Setup' : 'Show Setup';
+  @let btnUserAgentText = showUserAgent() ? 'Hide User Agent' : 'Show User Agent';
+  <div class="mb-8">
+    <button class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500 mr-4" (click)="showSetup.set(!showSetup())">{{ btnSetupText }}</button>
+    <button class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500" (click)="showUserAgent.set(!showUserAgent())">{{ btnUserAgentText }}</button>
+  </div>
+  @if (showSetup()) {
+    <app-setup class="w-full" />
+  }
+  <app-detect-ai class="w-full"  [showUserAgent]="showUserAgent()" />
+
   <footer class="mt-12 text-center text-gray-500 text-sm">
     <p>&copy; {{ fullYear }} Angular Web Dictaphone. Crafted with <i class="fas fa-heart text-red-500"></i>.</p>
   </footer>

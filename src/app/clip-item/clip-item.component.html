@@ -8,7 +8,7 @@
       Recorded: {{ clip().createdAt | date:'short' }}
     </p>
   </div>
-  <audio controls [src]="clip().url | safeUrl" class="w-fullrounded-md shadow-sm" [title]="'Play ' + clip().name"></audio>
+  <audio controls [src]="safeUrl()" class="w-fullrounded-md shadow-sm" [title]="'Play ' + clip().name"></audio>
   @let title = `Delete clip ${clip().name}`; 
   <button
     (click)="handleDelete()"
