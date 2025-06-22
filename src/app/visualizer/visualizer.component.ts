@@ -1,54 +1,76 @@
 
 
-import { Component, ChangeDetectionStrategy, input, viewChild, ElementRef, effect, OnDestroy, signal, AfterViewInit, inject, DestroyRef } from '@angular/core';
-import { takeWhile } from 'rxjs';
-import { animationFrames } from 'rxjs'; // RxJS animationFrames
+import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnDestroy, computed, effect, inject, input, linkedSignal, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { animationFrames, takeWhile } from 'rxjs';
+import { VisualizationService } from '../services/visualization.service';
 
 @Component({
   selector: 'app-visualizer',
   templateUrl: './visualizer.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '(window:resize)': 'onWindowResize()'
+    '(window:resize)': 'updateCanvasWidthSignal()'
   }
 })
 export class VisualizerComponent implements OnDestroy, AfterViewInit {
   mediaStream = input<MediaStream | null>();
-  isRecording = input<boolean>(false);
+  isRecording = input(false);
 
   canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('visualizerCanvas');
   
-  private canvasCtx: CanvasRenderingContext2D | null = null;
-  private audioContext: AudioContext | null = null;
-  private analyser: AnalyserNode | null = null;
-  private source: MediaStreamAudioSourceNode | null = null;
-  private dataArray: Uint8Array | null = null;
+  private audioContext = signal<AudioContext | undefined>(undefined);
+  private analyzer = linkedSignal<AudioContext | undefined, AnalyserNode | undefined>({
+    source: this.audioContext,
+    computation: (audioContext, previous) => {
+      if (!audioContext) {
+        return previous?.value;
+      }
+
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+
+      return analyser;
+    }
+  });
+
+  private dataArray = linkedSignal<AnalyserNode | undefined, Uint8Array | undefined>({
+    source: this.analyzer,
+    computation: (analyser, previous) => 
+      analyser ? new Uint8Array(analyser.frequencyBinCount) : previous?.value
+  });
   
   private canvasWidth = signal(300);
   private destroyRef = inject(DestroyRef);
+  private visualizationService = inject(VisualizationService);
 
-  constructor() {
-    effect(() => {
-      const stream = this.mediaStream();
-      const recording = this.isRecording();
-      const canvasEl = this.canvasRef()?.nativeElement;
-      const currentLogicalWidth = this.canvasWidth();
+  private canvasEl = linkedSignal<number, HTMLCanvasElement | undefined>({
+    source: this.canvasWidth,
+    computation: (currentLogicalWidth, previous) => {
+      const canvasEl = previous?.value || this.canvasRef()?.nativeElement;
 
-      if (!canvasEl) return;
-
+      if (!canvasEl) {
+        return canvasEl;
+      }
+      
       if (canvasEl.width !== currentLogicalWidth) {
         canvasEl.width = currentLogicalWidth;
       }
+      
       if (canvasEl.height !== 100) { 
         canvasEl.height = 100;
       }
-      
-      if (!this.canvasCtx) {
-        this.canvasCtx = canvasEl.getContext('2d');
-      }
+      return canvasEl;  
+    }
+  });
 
-      if (recording && stream && this.canvasCtx) {
+  private canvasCtx = computed(() => this.canvasEl()?.getContext('2d'));
+  private source: MediaStreamAudioSourceNode | null = null;
+
+  constructor() {
+    effect(() => {
+      const stream = this.mediaStream();      
+      if (this.mediaStream() && stream && this.canvasCtx()) {
         this.startVisualization(stream);
       } else {
         this.stopVisualization();
@@ -60,12 +82,8 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
     this.updateCanvasWidthSignal();
   }
 
-  onWindowResize(): void {
-    this.updateCanvasWidthSignal();
-  }
-
   private updateCanvasWidthSignal(): void {
-    const canvasEl = this.canvasRef()?.nativeElement;
+    const canvasEl = this.canvasEl();
     let newWidth = 300; 
 
     if (canvasEl && canvasEl.parentElement) {
@@ -75,83 +93,49 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
     }
     
     if (this.canvasWidth() !== newWidth && newWidth > 0) {
-        this.canvasWidth.set(newWidth);
+      this.canvasWidth.set(newWidth);
     }
   }
 
   private startVisualization(stream: MediaStream): void {
-    if (!this.canvasCtx) return;
-
-    if (!this.audioContext || this.audioContext.state === 'closed') {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      this.analyser = this.audioContext.createAnalyser();
-      this.analyser.fftSize = 2048;
-      this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+    if (!this.canvasCtx()) { 
+      return;
     }
 
-    if (this.analyser && (!this.source || this.source.mediaStream !== stream)) {
-        if (this.source) {
-            this.source.disconnect();
-        }
-        this.source = this.audioContext.createMediaStreamSource(stream);
-        this.source.connect(this.analyser);
+    if (!this.audioContext() || this.audioContext()?.state === 'closed') {
+      const newAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.audioContext.set(newAudioContext);
     }
-    
-    if (this.analyser && this.dataArray && this.canvasCtx) {
-        const analyserNode = this.analyser; 
-        const dataArr = this.dataArray; 
-        const ctx = this.canvasCtx; 
 
-        animationFrames()
-            .pipe(
-              takeWhile(() => this.isRecording() && !!analyserNode && !!dataArr && !!ctx),
-              takeUntilDestroyed(this.destroyRef)
-            )
-            .subscribe(() => {
-                this.drawVisualizationFrame(analyserNode, dataArr, ctx);
-            });
+    if (this.analyzer() && (!this.source || this.source.mediaStream !== stream)) {
+      const analyzerNode = this.analyzer() as AnalyserNode;
+      if (this.source) {
+          this.source.disconnect();
+      }
+      if (this.audioContext()) {
+          this.source = (this.audioContext() as AudioContext).createMediaStreamSource(stream);
+          this.source.connect(analyzerNode);  
+      }
     }
-  }
 
-  private drawVisualizationFrame(
-    analyserNode: AnalyserNode,
-    dataArray: Uint8Array<any>,
-    canvasCtx: CanvasRenderingContext2D
-  ): void {
-    analyserNode.getByteTimeDomainData(dataArray);
-    const canvas = canvasCtx.canvas;
+    const ctx = this.canvasCtx(); 
+    if (this.analyzer() && this.dataArray() && ctx) {
+      const analyzerNode = this.analyzer() as AnalyserNode; 
+      const dataArr = this.dataArray() as Uint8Array; 
 
-    canvasCtx.fillStyle = 'rgb(31, 41, 55)'; // bg-gray-800
-    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-    canvasCtx.lineWidth = 2;
-    canvasCtx.strokeStyle = 'rgb(129, 140, 248)'; // indigo-400
-
-    canvasCtx.beginPath();
-    const sliceWidth = (canvas.width * 1.0) / dataArray.length;
-    let x = 0;
-
-    for (let i = 0; i < dataArray.length; i++) {
-      const v = dataArray[i] / 128.0;
-      const y = (v * canvas.height) / 2;
-      if (i === 0) canvasCtx.moveTo(x, y);
-      else canvasCtx.lineTo(x, y);
-      x += sliceWidth;
+      animationFrames()
+        .pipe(
+          takeWhile(() => this.isRecording() && !!analyzerNode && !!dataArr && !!ctx),
+          takeUntilDestroyed(this.destroyRef)
+        )
+        .subscribe(() => {
+          this.visualizationService.drawVisualizationFrame(analyzerNode, dataArr, ctx);
+        });
     }
-    canvasCtx.lineTo(canvas.width, canvas.height / 2);
-    canvasCtx.stroke();
   }
 
   private stopVisualization(): void {    
-    if (this.canvasCtx) {
-      const canvas = this.canvasCtx.canvas;
-      this.canvasCtx.fillStyle = 'rgb(55, 65, 81)'; // bg-gray-700
-      this.canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-      this.canvasCtx.fillStyle = 'rgb(156, 163, 175)'; // text-gray-400
-      this.canvasCtx.textAlign = 'center';
-      this.canvasCtx.font = '16px Arial';
-      this.canvasCtx.fillText('Visualizer inactive', canvas.width / 2, canvas.height / 2);
-    }
-
+    this.visualizationService.clearCanvas();
     this.cleanupAudioNodes();
   }
   
@@ -160,13 +144,15 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
       this.source.disconnect();
       this.source = null;
     }
-    if (this.audioContext && this.audioContext.state !== 'closed') {
-      this.audioContext.close().catch(e => console.error("Error closing AudioContext:", e));
-      this.audioContext = null;
+
+    if (this.audioContext() && this.audioContext()?.state !== 'closed') {
+      this.audioContext()?.close()
+        .catch(e => console.error("Error closing AudioContext:", e));
+      this.audioContext.set(undefined);
     }
-    if (!this.audioContext) {
-        this.analyser = null;
-        this.dataArray = null;
+    if (!this.audioContext()) {
+        this.analyzer.set(undefined);
+        this.dataArray.set(undefined);
     }
   }
 
