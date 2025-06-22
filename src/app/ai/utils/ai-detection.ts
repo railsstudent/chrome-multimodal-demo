@@ -1,7 +1,8 @@
 import { catchError, from, Observable, of, switchMap } from 'rxjs';
+import { LANGUAGE_MODEL_OPTIONS } from '../constants/language-model-options.constant';
 import { ERROR_CODES } from '../enums/error-codes.enum';
 
-export async function getPromptAPIAvailability(): Promise<Omit<Availability, 'unavailable'>> {
+export async function getPromptAPIAvailability(options: LanguageModelCreateCoreOptions): Promise<Omit<Availability, 'unavailable'>> {
    const availability = await LanguageModel.availability({
       expectedInputs: [
           { type: "text", languages: ['en'] },
@@ -30,7 +31,7 @@ export async function validateLanguageModel(): Promise<boolean> {
 export function isPromptAPISupported(): Observable<string> {
    return from(validateLanguageModel())
       .pipe(
-      switchMap(() => getPromptAPIAvailability()
+      switchMap(() => getPromptAPIAvailability(LANGUAGE_MODEL_OPTIONS)
                .then(() => ''
                ).catch((e) => {
                   console.error(e);
