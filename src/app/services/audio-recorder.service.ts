@@ -31,7 +31,7 @@ export class AudioRecorderService {
   isRecording = this.#isRecording.asReadonly();
 
   private mediaRecorderRef: MediaRecorder | null = null;
-  private audioChunks: Blob[] = [];
+  private audioChunks = signal<Blob[]>([]);
 
   constructor() {
     this.checkPermission();
@@ -105,16 +105,16 @@ export class AudioRecorderService {
       this.recordedAudioBlob.set(null); // Clear previous blob
 
       this.mediaRecorderRef = new MediaRecorder(stream);
-      this.audioChunks = [];
+      this.audioChunks.set([]);
 
       this.mediaRecorderRef.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          this.audioChunks.push(event.data);
+          this.audioChunks.update((value) => value.concat(event.data));
         }
       };
 
       this.mediaRecorderRef.onstop = () => {
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+        const audioBlob = new Blob(this.audioChunks(), { type: 'audio/webm' });
         this.recordedAudioBlob.set(audioBlob);
         this.cleanupAfterStop();
       };
