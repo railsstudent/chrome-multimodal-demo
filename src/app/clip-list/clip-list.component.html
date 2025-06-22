@@ -14,7 +14,7 @@
         <li>
           <app-clip-item [clip]="clip" (delete)="onDeleteClip($event)" 
             (selectAudio)="onSelectAudio($event)"
-            [isChecked]="selectedClipId() === clip.id"
+            [isChecked]="selectedClip()?.id === clip.id"
           />
         </li>
       }

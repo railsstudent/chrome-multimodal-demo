@@ -5,3 +5,5 @@ export interface AudioClip {
   blob: Blob;
   createdAt: Date;
 }
+
+export type SelectedAudio = Pick<AudioClip, 'id' | 'name' | 'blob'>;

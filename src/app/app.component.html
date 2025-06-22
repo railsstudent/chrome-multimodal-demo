@@ -27,8 +27,14 @@
     </section>
 
     <section class="clips-area">
-      <app-clip-list [clips]="audioClips()" (deleteClip)="deleteClip($event)" />
+      <app-clip-list [clips]="audioClips()" (deleteClip)="deleteClip($event)" 
+        [(selectedClip)]="selectedClip"
+      />
     </section>
+
+    @if (selectedClip(); as selectedClip) {
+      {{ `Transcribe ${selectedClip.name}`}}
+    }
   </main>
   <footer class="mt-12 text-center text-gray-500 text-sm">
     <p>&copy; {{ fullYear }} Angular Web Dictaphone. Crafted with <i class="fas fa-heart text-red-500"></i>.</p>

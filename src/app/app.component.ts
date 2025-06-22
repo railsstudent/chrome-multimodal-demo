@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, linkedSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
 import { ClipListComponent } from './clip-list/clip-list.component';
 import { PermissionCheckComponent } from './permission-check/permission-check.component';
 import { RecordControlComponent } from './record-control/record-control.component';
 import { AudioRecorderService } from './services/audio-recorder.service';
-import { AudioClip } from './types';
+import { AudioClip, SelectedAudio } from './types';
 import { VisualizerComponent } from './visualizer/visualizer.component';
 
 @Component({
@@ -45,6 +45,8 @@ export class AppComponent {
       return previousClips;
     }
   });
+
+  selectedClip = signal<SelectedAudio | undefined>(undefined);
 
   requestAudioPermission(): void {
     this.audioRecorderService.requestPermission();
