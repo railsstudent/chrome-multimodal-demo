@@ -5,7 +5,6 @@ import { RecordControlComponent } from '../record-control/record-control.compone
 import { VisualizerComponent } from '../visualizer/visualizer.component';
 import { AudioRecorderService } from '../services/audio-recorder.service';
 import { AudioClip, SelectedAudio } from '../types';
-import { PromptService } from '../ai/services/prompt.service';
 
 @Component({
   selector: 'app-web-dictaphone',
@@ -15,13 +14,12 @@ import { PromptService } from '../ai/services/prompt.service';
     ClipListComponent,
     PermissionCheckComponent,
   ],
-  templateUrl: './web-dictaphone.component.html',
+  templateUrl: './audio-transcription.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WebDictaphoneComponent implements OnDestroy {
   private audioRecorderService = inject(AudioRecorderService);
-  private promptService = inject(PromptService);
-
+  
   isRecording = this.audioRecorderService.isRecording;
   mediaStream = this.audioRecorderService.mediaStream;
   recorderError = this.audioRecorderService.error;
@@ -65,17 +63,9 @@ export class WebDictaphoneComponent implements OnDestroy {
   deleteClip(id: string): void {
     const idx = this.audioClips().findIndex((clip) => clip.id === id);
     const clip = idx >= 0 ? this.audioClips()[idx] : undefined;    
-    this.audioClips.update(clips => clips.filter(clip => clip.id !== id));
+    this.audioClips.update(clips => clips.filter(clip => clip.id === id));
     if (clip) {
       URL.revokeObjectURL(clip.url); // Clean up blob URL
-    }
-  }
-
-  async transcribe() {
-    if (this.selectedClip()?.blob) {
-      const blob = this.selectedClip()?.blob as Blob;
-      const text = await this.promptService.transcribeAudio(blob);
-      console.log('transcribe', text);
     }
   }
 
