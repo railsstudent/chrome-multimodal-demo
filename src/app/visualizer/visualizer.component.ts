@@ -7,7 +7,9 @@ import { VisualizationService } from '../services/visualization.service';
 
 @Component({
   selector: 'app-visualizer',
-  templateUrl: './visualizer.component.html',
+  template: `
+    <canvas #visualizerCanvas class="block mb-4 w-full h-[100px] bg-gray-700 rounded-lg shadow-inner" aria-label="Audio visualizer"></canvas>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '(window:resize)': 'updateCanvasWidthSignal()'

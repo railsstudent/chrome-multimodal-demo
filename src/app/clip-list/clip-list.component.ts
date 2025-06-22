@@ -6,7 +6,6 @@ import { AudioClip } from '../types';
   selector: 'app-clip-list',
   imports: [ClipItemComponent],
   templateUrl: './clip-list.component.html',
-  styleUrls: ['./clip-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ClipListComponent {

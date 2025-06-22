@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 @Component({
   selector: 'app-record-control',
   templateUrl: './record-control.component.html',
-  styleUrls: ['./record-control.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RecordControlComponent {

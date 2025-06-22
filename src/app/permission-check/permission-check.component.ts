@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, input, output } from '@angular/core
 @Component({
   selector: 'app-permission-check',
   templateUrl: './permission-check.component.html',
-  styleUrls: ['./permission-check.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PermissionCheckComponent {

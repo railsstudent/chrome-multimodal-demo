@@ -15,7 +15,6 @@ import { VisualizerComponent } from './visualizer/visualizer.component';
     PermissionCheckComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
