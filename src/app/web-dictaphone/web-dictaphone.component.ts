@@ -6,6 +6,7 @@ import { VisualizerComponent } from '../visualizer/visualizer.component';
 import { AudioRecorderService } from '../services/audio-recorder.service';
 import { AudioClip, SelectedAudio } from '../types';
 import { PromptService } from '../ai/services/prompt.service';
+import { AudioTranscriberComponent } from '../audio-transcriber/audio-transcriber.component';
 
 @Component({
   selector: 'app-web-dictaphone',
@@ -14,6 +15,7 @@ import { PromptService } from '../ai/services/prompt.service';
     VisualizerComponent, 
     ClipListComponent,
     PermissionCheckComponent,
+    AudioTranscriberComponent,
   ],
   templateUrl: './web-dictaphone.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

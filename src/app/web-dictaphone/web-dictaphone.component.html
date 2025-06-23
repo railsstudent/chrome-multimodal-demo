@@ -23,4 +23,5 @@
 @if (selectedClip(); as selectedClip) {
 {{ `Transcribe ${selectedClip.name}`}}
 <button (click)="transcribe()">Transcribe</button>
+<app-audio-transcriber />
 }
