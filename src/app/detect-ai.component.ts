@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { UserAgentComponent } from './ai/user-agent.component';
-import { isPromptAPISupported } from './ai/utils/ai-detection';
+import { areBuiltInAPIsSupported } from './ai/utils/ai-detection';
 import { WebDictaphoneComponent } from './web-dictaphone/web-dictaphone.component';
 
 @Component({
@@ -28,5 +28,5 @@ import { WebDictaphoneComponent } from './web-dictaphone/web-dictaphone.componen
 })
 export class DetectAIComponent {
   showUserAgent = input(false);
-  hasCapability = toSignal(isPromptAPISupported(), { initialValue: '' });
+  hasCapability = toSignal(areBuiltInAPIsSupported(), { initialValue: '' });
 }

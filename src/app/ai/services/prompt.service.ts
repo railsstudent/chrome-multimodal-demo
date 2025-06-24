@@ -8,17 +8,16 @@ export class PromptService implements OnDestroy  {
     #controller = new AbortController();
     #strError = signal('');
     error = this.#strError.asReadonly();
-    downloadPercentage = signal(100);
     #session = signal<LanguageModel | undefined>(undefined);
     session = this.#session.asReadonly();
+    downloadPercentage = signal(100);
 
     private readonly errors: Record<string, string> = {
         'InvalidStateError': 'The document is not active. Please try again later.',
         'NetworkError': 'The network is not available to download the AI model.',
-        'NotAllowedError': 'The Translator is not allowed to create.',
-        'NotSupportedError': 'The Translator does not support one of the languages.',
-        'OperationError': 'Operation error occurred when creating the translator for the language pair:',
-        'QuotaExceededError': 'Translator API Quota exceeded. Please try again later.',
+        'NotAllowedError': 'The session is not allowed to create.',
+        'OperationError': 'Operation error occurred when creating the session for the options',
+        'QuotaExceededError': 'Prompt API Quota exceeded. Please try again later.',
         'UnknownError': 'Unknown error occurred while using the translator.',
         'TypeError': 'Invalid type and value combination in the multimodal input.',
         'EncodingError': 'Multimodal input (e.g. image or audio) does not support the format or error in decoding the data',

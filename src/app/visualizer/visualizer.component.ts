@@ -67,6 +67,13 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
   });
 
   private canvasCtx = computed(() => this.canvasEl()?.getContext('2d'));
+  private canRecord = computed(() => 
+    this.isRecording() && !! this.analyzer() && !!this.dataArray() && !!this.canvasCtx()
+  );
+  private isNoAudioContext = computed(() => 
+    !this.audioContext() || this.audioContext()?.state === 'closed'
+  )
+
   private source: MediaStreamAudioSourceNode | null = null;
 
   constructor() {
@@ -104,35 +111,43 @@ export class VisualizerComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
-    if (!this.audioContext() || this.audioContext()?.state === 'closed') {
+    if (this.isNoAudioContext()) {
       const newAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.audioContext.set(newAudioContext);
     }
 
     if (this.analyzer() && (!this.source || this.source.mediaStream !== stream)) {
-      const analyzerNode = this.analyzer() as AnalyserNode;
-      if (this.source) {
-          this.source.disconnect();
-      }
-      if (this.audioContext()) {
-          this.source = (this.audioContext() as AudioContext).createMediaStreamSource(stream);
-          this.source.connect(analyzerNode);  
-      }
+      this.connectStream(stream);
     }
 
-    const ctx = this.canvasCtx(); 
-    if (this.analyzer() && this.dataArray() && ctx) {
-      const analyzerNode = this.analyzer() as AnalyserNode; 
-      const dataArr = this.dataArray() as Uint8Array; 
+    this.handleAnimation();
+  }
 
+  private handleAnimation() {
+    const ctx = this.canvasCtx();
+    const analyzerNode = this.analyzer();
+    const dataArr = this.dataArray();
+    
+    if (analyzerNode && dataArr && ctx) {
       animationFrames()
         .pipe(
-          takeWhile(() => this.isRecording() && !!analyzerNode && !!dataArr && !!ctx),
+          takeWhile(() => this.canRecord()),
           takeUntilDestroyed(this.destroyRef)
         )
-        .subscribe(() => {
-          this.visualizationService.drawVisualizationFrame(analyzerNode, dataArr, ctx);
-        });
+        .subscribe(() => 
+          this.visualizationService.drawVisualizationFrame(analyzerNode, dataArr, ctx)
+        );
+    }
+  }
+
+  private connectStream(stream: MediaStream) {
+    const analyzerNode = this.analyzer() as AnalyserNode;
+    if (this.source) {
+      this.source.disconnect();
+    }
+    if (this.audioContext()) {
+      this.source = (this.audioContext() as AudioContext).createMediaStreamSource(stream);
+      this.source.connect(analyzerNode);
     }
   }
 

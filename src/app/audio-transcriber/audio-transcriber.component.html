@@ -1,3 +1,7 @@
 <div>
   Transcribe audio clip:
+  <button [disabled]="!blob()">Transcribe</button>
+  <div>
+    <p>{{ transcription() }}</p>
+  </div>
 </div>
