@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, signal, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, computed, inject, effect, output } from '@angular/core';
 import { PromptService } from '../ai/services/prompt.service';
 import { SelectedAudio } from '../types';
 
@@ -16,7 +16,19 @@ export class AudioTranscriberComponent {
   isTranscribing = signal(false);
   error = this.transcriptionService.error;
 
-  isButtonDisabled = computed<boolean>(() => !this.audioBlob() || this.isTranscribing());
+  isButtonDisabled = computed(() => !this.audioBlob() || this.isTranscribing());
+
+  topicTranscribed = output<string>();
+
+  hasTranscription = computed(() => !!this.transcription() && !this.error());
+
+  constructor() {
+    effect(() => {
+      if (this.hasTranscription())
+        this.topicTranscribed.emit(this.transcription());
+      }
+    );
+  }
 
   async transcribeAudio(): Promise<void> {
     const currentBlob = this.audioBlob(); // Get the current value of the input signal

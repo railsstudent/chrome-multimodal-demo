@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, linkedSignal, OnDestroy, signal } from '@angular/core';
+import { PromptService } from '../ai/services/prompt.service';
+import { AudioStoryComponent } from '../audio-story/audio-story.component';
 import { ClipListComponent } from '../clip-list/clip-list.component';
 import { PermissionCheckComponent } from '../permission-check/permission-check.component';
 import { RecordControlComponent } from '../record-control/record-control.component';
-import { VisualizerComponent } from '../visualizer/visualizer.component';
 import { AudioRecorderService } from '../services/audio-recorder.service';
 import { AudioClip, SelectedAudio } from '../types';
-import { PromptService } from '../ai/services/prompt.service';
-import { AudioTranscriberComponent } from '../audio-transcriber/audio-transcriber.component';
+import { VisualizerComponent } from '../visualizer/visualizer.component';
 
 @Component({
   selector: 'app-web-dictaphone',
@@ -15,7 +15,7 @@ import { AudioTranscriberComponent } from '../audio-transcriber/audio-transcribe
     VisualizerComponent, 
     ClipListComponent,
     PermissionCheckComponent,
-    AudioTranscriberComponent,
+    AudioStoryComponent,
   ],
   templateUrl: './web-dictaphone.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

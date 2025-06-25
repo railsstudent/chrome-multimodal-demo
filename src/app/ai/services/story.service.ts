@@ -46,7 +46,11 @@ export class StoryService implements OnDestroy  {
             await this.init();
         }
 
-        try {
+        try {            
+            if (!topic || topic.trim() === '') {
+                return '';
+            }
+
             const writer = this.#writer();
             if (writer) {
                 return await writer.write(`A story about ${topic}`);

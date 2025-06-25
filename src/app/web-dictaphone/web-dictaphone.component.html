@@ -20,6 +20,4 @@
     />
 </section>
 
-@if (selectedClip(); as selectedClip) {
-  <app-audio-transcriber [audioBlob]="selectedClip" />
-}
+<app-audio-story [selectedClip]="selectedClip()" />
