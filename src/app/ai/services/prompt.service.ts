@@ -60,28 +60,35 @@ export class PromptService implements OnDestroy  {
     }
 
     async transcribeAudio(audioBlob: Blob): Promise<string> {
+        this.#strError.set(''); // Clear previous error
+
         if (!this.#session()) {
             await this.init();
         }
 
-        if (this.#session()) {
-            const session = this.#session() as LanguageModel; 
-            const responseText = await session.prompt(
-                [{
-                    role: 'user', content: [
-                        {
-                            type: 'text', value: 'Translate the audio clip to text:',
-                        },
-                        {
-                            type: 'audio',
-                            value: audioBlob,
-                        }
-                    ] 
-                }]);
-            return responseText;
-        } else {
-            console.error('Language Model session is not initialized.');
-            this.#strError.set('Language Model session is not initialized.');
+        try {
+            if (this.#session()) {
+                const session = this.#session() as LanguageModel; 
+                const responseText = await session.prompt(
+                    [{
+                        role: 'user', content: [
+                            {
+                                type: 'text', value: 'Translate the audio clip to text:',
+                            },
+                            {
+                                type: 'audio',
+                                value: audioBlob,
+                            }
+                        ] 
+                    }]);
+                return responseText;
+            } else {
+                console.error('Language Model session is not initialized.');
+                this.#strError.set('Language Model session is not initialized.');
+                return '';
+            }
+        } catch (promptError) {
+            this.handleErrors(promptError);
             return '';
         }
     }

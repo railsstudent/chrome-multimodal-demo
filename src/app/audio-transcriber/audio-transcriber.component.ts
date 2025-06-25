@@ -1,12 +1,77 @@
-import { ChangeDetectionStrategy, Component, input, Signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, signal, computed, inject } from '@angular/core';
+import { PromptService } from '../ai/services/prompt.service';
+import { SelectedAudio } from '../types';
 
 @Component({
   selector: 'app-audio-transcriber',
-  imports: [],
-  templateUrl: './audio-transcriber.component.html',
+  template: `
+    <div class="p-6 bg-slate-800 text-white rounded-lg shadow-xl max-w-md mx-auto">
+      <button
+        type="button"
+        (click)="transcribeAudio()"
+        [disabled]="isButtonDisabled()"
+        class="px-6 py-3 mb-4 w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed"
+        aria-live="polite"
+        [attr.aria-busy]="isTranscribing() ? 'true' : null"
+      >
+        @if (isTranscribing()) {
+          <span class="flex items-center justify-center">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Transcribing...
+          </span>
+        } @else {
+          <span>Transcribe Audio</span>
+        }
+      </button>
+
+      @if (error(); as errorMessage) {
+        <div role="alert" class="mt-4 p-3 bg-red-600 text-white rounded-md shadow-md">
+          <p class="font-semibold">Transcription Error:</p>
+          <p>{{ errorMessage }}</p>
+        </div>
+      }
+
+      @if (transcription() && !error()) {
+        <div class="mt-4 p-4 bg-slate-700 rounded-lg">
+          <h3 class="text-lg font-semibold mb-2 text-sky-300">Transcription Result:</h3>
+          <pre class="text-slate-300 whitespace-pre-wrap text-sm">{{ transcription() }}</pre>
+        </div>
+      }
+    </div>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AudioTranscriberComponent {
-  blob: Signal<Blob | undefined> = input(undefined);
-  transcription: Signal<string | undefined> = input(undefined);
+  audioBlob = input<SelectedAudio | undefined>(undefined); // Input signal for the audio blob
+
+  private transcriptionService = inject(PromptService);
+
+  transcription = signal('');
+  isTranscribing = signal(false);
+  error = this.transcriptionService.error;
+
+  isButtonDisabled = computed<boolean>(() => !this.audioBlob() || this.isTranscribing());
+
+  async transcribeAudio(): Promise<void> {
+    const currentBlob = this.audioBlob(); // Get the current value of the input signal
+    if (!currentBlob || !currentBlob.blob) {
+      return;
+    }
+
+    this.isTranscribing.set(true);
+    this.transcription.set(''); // Clear previous transcription
+
+    try {
+      const result = await this.transcriptionService.transcribeAudio(currentBlob.blob);
+      this.transcription.set(result);
+    } catch (err) {
+      console.error('Transcription failed in component:', err);
+      this.transcription.set(''); // Ensure transcription is cleared on error
+    } finally {
+      this.isTranscribing.set(false);
+    }
+  }
 }
