@@ -1,19 +1,9 @@
-<div class="p-6 bg-slate-800 text-white rounded-lg shadow-xl max-w-md mx-auto">
-  <div class="mb-4 text-sm">
-    @if (audioBlob(); as currentBlob) {
-      <p class="text-green-400">
-        Audio loaded: {{ currentBlob.name || 'Unnamed Blob' }} (Size: {{ (currentBlob.size / 1024).toFixed(2) }} KB, Type: {{ currentBlob.type || 'unknown' }})
-      </p>
-    } @else {
-      <p class="text-yellow-400">No audio blob provided. Please set the 'audioBlob' input.</p>
-    }
-  </div>
-
+<div class="p-6 bg-slate-800 text-white rounded-lg shadow-xl w-full mx-auto">
   <button
     type="button"
     (click)="transcribeAudio()"
     [disabled]="isButtonDisabled()"
-    class="px-6 py-3 mb-4 w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed"
+    class="px-6 py-3 mb-4 bg-sky-600 hover:bg-sky-500 text-white font-semibold rounded-lg shadow-md transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-75 disabled:opacity-60 disabled:cursor-not-allowed"
     aria-live="polite"
     [attr.aria-busy]="isTranscribing() ? 'true' : null"
   >
@@ -34,6 +24,13 @@
     <div role="alert" class="mt-4 p-3 bg-red-600 text-white rounded-md shadow-md">
       <p class="font-semibold">Transcription Error:</p>
       <p>{{ errorMessage }}</p>
+    </div>
+  }
+
+  @if (transcription() && !error()) {
+    <div class="mt-4 p-4 bg-slate-700 rounded-lg">
+      <h3 class="text-lg font-semibold mb-2 text-sky-300">Transcription Result:</h3>
+      <pre class="text-slate-300 whitespace-pre-wrap text-sm">{{ transcription() }}</pre>
     </div>
   }
 

@@ -34,6 +34,7 @@ export class WebDictaphoneComponent implements OnDestroy {
   audioClips = linkedSignal<Blob | null, AudioClip[]>({
     source: this.audioRecorderService.newClipRecorded,
     computation: (newBlob, previous) => {
+      const numCopiesToKeep = 3;
       const previousClips = previous?.value || [];
       if (newBlob) {
         const id = crypto.randomUUID();
@@ -44,7 +45,7 @@ export class WebDictaphoneComponent implements OnDestroy {
           blob: newBlob,
           createdAt: new Date(),
         };
-        return [newClip, ...previousClips];
+        return [newClip, ...previousClips].slice(0, numCopiesToKeep);
       }
       return previousClips;
     }
@@ -82,8 +83,6 @@ export class WebDictaphoneComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Clean up all object URLs when the app component is destroyed
     this.audioClips().forEach(clip => URL.revokeObjectURL(clip.url));
-    // Service handles its own stream cleanup if needed
   }
 }

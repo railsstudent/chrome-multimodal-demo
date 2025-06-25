@@ -10,7 +10,6 @@ export class PromptService implements OnDestroy  {
     error = this.#strError.asReadonly();
     #session = signal<LanguageModel | undefined>(undefined);
     session = this.#session.asReadonly();
-    downloadPercentage = signal(100);
 
     private readonly errors: Record<string, string> = {
         'InvalidStateError': 'The document is not active. Please try again later.',
@@ -18,33 +17,21 @@ export class PromptService implements OnDestroy  {
         'NotAllowedError': 'The session is not allowed to create.',
         'OperationError': 'Operation error occurred when creating the session for the options',
         'QuotaExceededError': 'Prompt API Quota exceeded. Please try again later.',
-        'UnknownError': 'Unknown error occurred while using the translator.',
+        'UnknownError': 'Unknown error occurred while using the session.',
         'TypeError': 'Invalid type and value combination in the multimodal input.',
         'EncodingError': 'Multimodal input (e.g. image or audio) does not support the format or error in decoding the data',
     }
 
-    private async isCreateMonitorCallbackNeeded(options: LanguageModelCreateCoreOptions) {
-        const availability = await LanguageModel.availability(options);
-
-        return ['downloadable', 'downloading'].includes(availability);
-    }
-
     async init() {
-        const requireMonitor = await this.isCreateMonitorCallbackNeeded(LANGUAGE_MODEL_OPTIONS);
-        if (!requireMonitor) {
-            this.downloadPercentage.set(100);            
-        }
-        
         try {
             const session = await LanguageModel.create({
                 ...LANGUAGE_MODEL_OPTIONS,
                 signal: this.#controller.signal,
-                monitor: requireMonitor ? (monitor: CreateMonitor) => 
+                monitor: (monitor: CreateMonitor) => 
                     monitor.addEventListener("downloadprogress", (e) => {
                         const percentage = Math.floor(e.loaded * 100);
                         console.log(`Language Model: Downloaded ${percentage}%`);
-                        this.downloadPercentage.set(percentage);
-                    }) : undefined,
+                    }),
                 initialPrompts: [
                     {
                         role: 'system',
@@ -56,6 +43,7 @@ export class PromptService implements OnDestroy  {
             this.#session.set(session);
         } catch (error) {
             this.handleErrors(error);
+            this.#session.set(undefined); // Reset session on error
         }
     }
 
@@ -63,12 +51,13 @@ export class PromptService implements OnDestroy  {
         this.#strError.set(''); // Clear previous error
 
         if (!this.#session()) {
+            console.log('Initialize session.');
             await this.init();
         }
 
         try {
-            if (this.#session()) {
-                const session = this.#session() as LanguageModel; 
+            const session = this.#session();
+            if (session) {
                 const responseText = await session.prompt(
                     [{
                         role: 'user', content: [
@@ -81,10 +70,12 @@ export class PromptService implements OnDestroy  {
                             }
                         ] 
                     }]);
+                console.log('Transcription result:', responseText);
                 return responseText;
             } else {
-                console.error('Language Model session is not initialized.');
-                this.#strError.set('Language Model session is not initialized.');
+                const errorText = 'The prompt session is not initialized.';
+                console.error('The prompt session is not initialized.');
+                this.#strError.set(errorText);
                 return '';
             }
         } catch (promptError) {
