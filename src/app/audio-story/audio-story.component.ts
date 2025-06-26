@@ -19,7 +19,7 @@ import { SelectedAudio } from '../types';
 })
 export class AudioStoryComponent {
     selectedClip = input<SelectedAudio | undefined>(undefined);
-    trascribedTopic = signal('')    
+    trascribedTopic = signal('');
 
     handleTopicTranscribed(topic: string): void {
         this.trascribedTopic.set(topic);
