@@ -18,6 +18,7 @@
     "@angular/platform-browser": "^20.0.4",
     "@angular/platform-browser-dynamic": "^20.0.4",
     "@angular/router": "^20.0.4",
+    "dotenv": "^16.5.0",
     "firebase": "11.7.1-eap-ai-hybridinference.58d92df33",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
