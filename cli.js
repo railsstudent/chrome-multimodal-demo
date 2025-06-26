@@ -21,7 +21,7 @@ const data = {
 const jsonString = JSON.stringify(data, null, 2);
 
 // Define output file path
-const outputPath = path.join('public', 'firebase-ai.json');
+const outputPath = path.join('src','app', 'firebase-ai.json');
 
 // Write JSON string to file
 fs.writeFile(outputPath, jsonString, (err) => {
