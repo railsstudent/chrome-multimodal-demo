@@ -21,8 +21,7 @@
     "dotenv": "^16.5.0",
     "firebase": "11.7.1-eap-ai-hybridinference.58d92df33",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0",
-    "zone.js": "~0.15.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular/build": "^20.0.3",
