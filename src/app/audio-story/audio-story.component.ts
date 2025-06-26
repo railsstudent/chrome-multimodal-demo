@@ -12,16 +12,16 @@ import { SelectedAudio } from '../types';
   template: `
     @if (selectedClip(); as selectedClip) {
         <app-audio-transcriber [audioBlob]="selectedClip" (topicTranscribed)="handleTopicTranscribed($event)" />
-        <app-story-generator [topic]="trascribedTopic()" />
+        <app-story-generator [topic]="transcribedTopic()" />
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AudioStoryComponent {
     selectedClip = input<SelectedAudio | undefined>(undefined);
-    trascribedTopic = signal('');
+    transcribedTopic = signal('');
 
     handleTopicTranscribed(topic: string): void {
-        this.trascribedTopic.set(topic);
+        this.transcribedTopic.set(topic);
     }
 }
