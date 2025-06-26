@@ -38,6 +38,7 @@ export class AudioTranscriberComponent {
 
     this.isTranscribing.set(true);
     this.transcription.set(''); // Clear previous transcription
+    this.topicTranscribed.emit('');
 
     try {
       const result = await this.transcriptionService.transcribeAudio(currentBlob.blob);

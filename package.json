@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "./cli.js && ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -18,6 +18,8 @@
     "@angular/platform-browser": "^20.0.4",
     "@angular/platform-browser-dynamic": "^20.0.4",
     "@angular/router": "^20.0.4",
+    "dotenv": "^16.5.0",
+    "firebase": "^11.9.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

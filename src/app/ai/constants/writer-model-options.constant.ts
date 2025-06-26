@@ -3,6 +3,6 @@ export const WRITER_MODEL_OPTIONS: WriterCreateCoreOptions = {
     outputLanguage: 'en',
     tone: 'casual',
     format: 'plain-text',
-    length: 'long',
+    length: 'medium',
     expectedContextLanguages: ['en'],
 }
