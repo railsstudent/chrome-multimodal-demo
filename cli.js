@@ -17,8 +17,16 @@ const data = {
     measurementId: process.env.FIREBASE_MEASUREMENT_ID,
 };
 
+const imagenModelName = process.env.IMAGEN_MODEL_NAME;
+if (!imagenModelName) {
+  throw new ERROR('IMAGEN_MODEL_NAME is not set. Using default model name.');
+}
+
 // Convert data to JSON string with indentation
-const jsonString = JSON.stringify(data, null, 2);
+const jsonString = JSON.stringify({
+  app: data,
+  imagenModelName,
+}, null, 2);
 
 // Define output file path
 const outputPath = path.join('src','app', 'firebase-ai.json');

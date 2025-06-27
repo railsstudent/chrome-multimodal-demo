@@ -1,15 +1,26 @@
 import { makeEnvironmentProviders } from '@angular/core';
+import { getAI, getImagenModel, GoogleAIBackend } from 'firebase/ai';
 import { initializeApp } from "firebase/app";
 import firebaseConfig from '../../firebase-ai.json';
-import { FIREBASE_APP } from '../constants/firebase.constant';
-
-const app = initializeApp(firebaseConfig);
+import { IMAGEN_MODEL } from '../constants/firebase.constant';
 
 export function provideFirebase() {
     return makeEnvironmentProviders([
         {
-            provide:  FIREBASE_APP,
-            useValue: app
+            provide: IMAGEN_MODEL,
+            useFactory: () => {
+                const firebaseApp = initializeApp(firebaseConfig.app);
+
+                // Initialize the Gemini Developer API backend service
+                const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
+
+                return getImagenModel(ai, {            
+                    model: firebaseConfig.imagenModelName || "imagen-3.0-generate-002",
+                    generationConfig: {
+                        numberOfImages: 1,
+                    }
+                });
+            }
         }
     ]);
 }

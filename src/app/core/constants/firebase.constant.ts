@@ -1,4 +1,4 @@
 import { InjectionToken } from '@angular/core';
-import { FirebaseApp } from 'firebase/app';
+import { ImagenModel } from 'firebase/ai';
 
-export const FIREBASE_APP = new InjectionToken<FirebaseApp>('firebase.config');
+export const IMAGEN_MODEL = new InjectionToken<ImagenModel>('imagen_model');
