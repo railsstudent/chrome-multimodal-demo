@@ -9,13 +9,14 @@ export function provideFirebase() {
         {
             provide: IMAGEN_MODEL,
             useFactory: () => {
-                const firebaseApp = initializeApp(firebaseConfig.app);
+                const { app, imagenModelName = 'imagen-3.0-generate-002' } = firebaseConfig;
+                const firebaseApp = initializeApp(app);
 
                 // Initialize the Gemini Developer API backend service
                 const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
 
                 return getImagenModel(ai, {            
-                    model: firebaseConfig.imagenModelName || "imagen-3.0-generate-002",
+                    model: imagenModelName,
                     generationConfig: {
                         numberOfImages: 1,
                     }
