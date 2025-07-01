@@ -47,7 +47,7 @@ export class PromptService implements OnDestroy  {
         }
     }
 
-    async transcribeAudio(audioBlob: Blob): Promise<string> {
+    async transcribeAudio(audio: Blob): Promise<string> {
         this.#strError.set(''); // Clear previous error
 
         if (!this.#session()) {
@@ -66,7 +66,7 @@ export class PromptService implements OnDestroy  {
                             },
                             {
                                 type: 'audio',
-                                value: audioBlob,
+                                value: audio,
                             }
                         ] 
                     }]);

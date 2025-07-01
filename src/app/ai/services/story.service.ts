@@ -11,6 +11,9 @@ export class StoryService implements OnDestroy  {
     #writer = signal<Writer | undefined>(undefined);
     writer = this.#writer.asReadonly();
 
+    #chunk = signal<string>('');
+    chunk = this.#chunk.asReadonly();
+
     private readonly errors: Record<string, string> = {
         'InvalidStateError': 'The document is not active. Please try again later.',
         'NetworkError': 'The network is not available to download the AI model.',
@@ -79,6 +82,35 @@ export class StoryService implements OnDestroy  {
         } else {
             console.error(promptError);
             this.#strError.set(this.errors['UnknownError']);
+        }
+    }
+
+    async makeStoryStream(topic: string): Promise<void> {
+        this.#strError.set(''); // Clear previous error
+        this.#chunk.set(''); // Clear previous chunk
+
+        if (!this.#writer()) {
+            await this.init();
+        }
+
+        try {            
+            if (!topic || topic.trim() === '') {
+                return;
+            }
+
+            const writer = this.#writer();
+            if (writer) {
+                const stream =  writer.writeStreaming(`A story about ${topic}`)
+                for await (const chunk of stream) {
+                    this.#chunk.update((prevChunk) => prevChunk + chunk);
+                }
+            } else {
+                const errorText = 'The writer is not initialized.';
+                console.error(errorText);
+                this.#strError.set(errorText);
+            }
+        } catch (error) {
+            this.handleErrors(error);
         }
     }
 

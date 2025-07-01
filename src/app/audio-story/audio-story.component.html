@@ -1,6 +1,6 @@
 @if (selectedClip(); as selectedClip) {
     <app-audio-transcriber [audioBlob]="selectedClip" 
-        (handleTranscription)="transcribeTopic.next()" 
+        (handleTranscription)="audioToText.next()" 
         [transcription]="transcribedTopic()"
         [error]="transcriptionError()"
         [isTranscribing]="isTranscribing()"
@@ -27,7 +27,7 @@
     <app-story-generator 
         [topic]="transcribedTopic()" 
         [content]="story()" 
-        [isGenerating]="isGenerating()"
+        [isGenerating]="isTranscribing()"
         [error]="storyError()"
     />
 }

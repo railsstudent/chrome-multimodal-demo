@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { filter, map, shareReplay, Subject, switchMap, tap } from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { filter, map, shareReplay, Subject, switchMap } from 'rxjs';
 import { FirebaseService } from '../ai/services/firebase.service';
 import { PromptService } from '../ai/services/prompt.service';
 import { StoryService } from '../ai/services/story.service';
@@ -24,16 +24,14 @@ export class AudioStoryComponent {
     private storyService = inject(StoryService);
     private transcriptionService = inject(PromptService);
 
-    transcribeTopic = new Subject<void>();
+    audioToText = new Subject<void>();
 
     isTranscribing = signal(false);
-    #transcription$ = this.transcribeTopic
+    #transcription$ = this.audioToText
       .pipe(
-        tap(() => console.log('hello')),
         filter(() => !!this.selectedClip()?.blob),
         map(() => this.selectedClip()?.blob as Blob),
         switchMap((blob) => {
-          console.log('blob', blob);
           this.isTranscribing.set(true);
           return this.transcriptionService.transcribeAudio(blob)
             .then((topic) => topic)
@@ -54,11 +52,6 @@ export class AudioStoryComponent {
         switchMap((topic) =>  {
           this.loadingImage.set(true);
           return this.firebaseService.generateImage(topic)
-            .then((imageData) => {
-              const mimeType = imageData.mimeType;
-              const base64Data = imageData.bytesBase64Encoded;
-              return `data:${mimeType};base64,${base64Data}`;
-            })
             .catch((err) => { 
               console.log(err);
               return '';
@@ -66,19 +59,20 @@ export class AudioStoryComponent {
             .finally(() => this.loadingImage.set(false))
         })
       ), { initialValue: ''});
-
-    isGenerating = signal(false);
     
-    #story$ = this.#transcription$
-      .pipe(
-        filter((topic) => !!topic),
-        switchMap((topic) => { 
-          this.isGenerating.set(true);
-          return this.storyService.makeStory(topic)
-            .finally(() => this.isGenerating.set(false));
-        }),
-      );
-
-    story = toSignal(this.#story$, { initialValue: '' });    
+    story = this.storyService.chunk;
     storyError = this.storyService.error;
+
+    destroyRef$ = inject(DestroyRef);
+
+    constructor() {
+      this.#transcription$
+        .pipe(
+          filter((topic) => !!topic && topic.trim() !== ''),
+          map((topic) => topic.trim()),
+          switchMap((topic) => this.storyService.makeStoryStream(topic)),  
+          takeUntilDestroyed(this.destroyRef$)
+        )
+      .subscribe();
+    }
 }

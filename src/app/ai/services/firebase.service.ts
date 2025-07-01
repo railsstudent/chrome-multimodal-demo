@@ -17,7 +17,10 @@ export class FirebaseService  {
         console.log('imagePrompt', imagePrompt);
         const result = await this.imagenModel.generateImages(imagePrompt);
         if (result?.images?.[0]) {
-            return result.images[0];
+            const imageData =  result.images[0];
+            const mimeType = imageData.mimeType;
+            const base64Data = imageData.bytesBase64Encoded;
+            return `data:${mimeType};base64,${base64Data}`;
         }
         throw Error('No images generated.');
     }    
