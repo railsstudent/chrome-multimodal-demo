@@ -12,8 +12,8 @@
   @let btnSetupText = showSetup() ? 'Hide Setup' : 'Show Setup';
   @let btnUserAgentText = showUserAgent() ? 'Hide User Agent' : 'Show User Agent';
   <div class="mb-6">
-    <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500 mr-4" (click)="showSetup.set(!showSetup())">{{ btnSetupText }}</button>
-    <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500" (click)="showUserAgent.set(!showUserAgent())">{{ btnUserAgentText }}</button>
+    <button class="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 text-white focus:ring-indigo-500 mr-4" (click)="showSetup.set(!showSetup())">{{ btnSetupText }}</button>
+    <button class="px-4 py-2 bg-indigo-600 rounded-lg hover:bg-indigo-700 text-white focus:ring-indigo-500" (click)="showUserAgent.set(!showUserAgent())">{{ btnUserAgentText }}</button>
   </div>
   @if (showSetup()) {
     <app-setup class="w-full" />

@@ -1,5 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, signal, computed, inject, effect, output } from '@angular/core';
-import { PromptService } from '../ai/services/prompt.service';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { SelectedAudio } from '../types';
 
 @Component({
@@ -9,26 +8,14 @@ import { SelectedAudio } from '../types';
 })
 export class AudioTranscriberComponent {
   audioBlob = input<SelectedAudio | undefined>(undefined); // Input signal for the audio blob
-
-  private transcriptionService = inject(PromptService);
-
-  transcription = signal('');
-  isTranscribing = signal(false);
-  error = this.transcriptionService.error;
+  isTranscribing = input(false);
+  error = input('');
+  transcription = input.required<string>();
 
   isButtonDisabled = computed(() => !this.audioBlob() || this.isTranscribing());
-
-  topicTranscribed = output<string>();
-
   hasTranscription = computed(() => !!this.transcription() && !this.error());
 
-  constructor() {
-    effect(() => {
-      if (this.hasTranscription())
-        this.topicTranscribed.emit(this.transcription());
-      }
-    );
-  }
+  handleTranscription = output<void>();
 
   async transcribeAudio(): Promise<void> {
     const currentBlob = this.audioBlob(); // Get the current value of the input signal
@@ -36,18 +23,6 @@ export class AudioTranscriberComponent {
       return;
     }
 
-    this.isTranscribing.set(true);
-    this.transcription.set(''); // Clear previous transcription
-    this.topicTranscribed.emit('');
-
-    try {
-      const result = await this.transcriptionService.transcribeAudio(currentBlob.blob);
-      this.transcription.set(result);
-    } catch (err) {
-      console.error('Transcription failed in component:', err);
-      this.transcription.set(''); // Ensure transcription is cleared on error
-    } finally {
-      this.isTranscribing.set(false);
-    }
+    this.handleTranscription.emit();
   }
 }

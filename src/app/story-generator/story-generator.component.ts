@@ -1,7 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input, linkedSignal, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { filter, switchMap } from 'rxjs';
-import { StoryService } from '../ai/services/story.service';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-story-generator',
@@ -10,23 +7,7 @@ import { StoryService } from '../ai/services/story.service';
 })
 export class StoryGeneratorComponent {
   topic = input.required<string>();
-
-  private storyService = inject(StoryService);
-
-  isGenerating = signal(false);
-
-  content = toSignal(toObservable(this.topic)
-    .pipe(
-      filter((topic) => !!topic),
-      switchMap((topic) => { 
-        this.isGenerating.set(true);
-        return this.storyService.makeStory(topic)
-          .finally(() => this.isGenerating.set(false));
-      }),
-    )
-  , {
-    initialValue: '',
-  })
-
-  error = this.storyService.error;
+  content = input.required<string>();
+  isGenerating = input(false);
+  error = input('');
 }
