@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, shareReplay, Subject, switchMap } from 'rxjs';
 import { FirebaseService } from '../ai/services/firebase.service';

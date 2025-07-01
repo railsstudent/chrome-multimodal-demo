@@ -42,33 +42,6 @@ export class StoryService implements OnDestroy  {
         }
     }
 
-    async makeStory(topic: string): Promise<string> {
-        this.#strError.set(''); // Clear previous error
-
-        if (!this.#writer()) {
-            await this.init();
-        }
-
-        try {            
-            if (!topic || topic.trim() === '') {
-                return '';
-            }
-
-            const writer = this.#writer();
-            if (writer) {
-                return await writer.write(`A story about ${topic}`);
-            } else {
-                const errorText = 'The writer is not initialized.';
-                console.error(errorText);
-                this.#strError.set(errorText);
-                return '';
-            }
-        } catch (error) {
-            this.handleErrors(error);
-            return '';
-        }
-    }
-
     private handleErrors(promptError: unknown) {
         if (promptError instanceof DOMException) {
             const error = this.errors[promptError.name];
