@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, signal } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { filter, map, shareReplay, Subject, switchMap } from 'rxjs';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { filter, map, Subject, switchMap, tap } from 'rxjs';
 import { FirebaseService } from '../ai/services/firebase.service';
 import { PromptService } from '../ai/services/prompt.service';
 import { StoryService } from '../ai/services/story.service';
@@ -26,32 +26,24 @@ export class AudioStoryComponent {
 
     audioToText = new Subject<void>();
 
-    isTranscribing = signal(false);
-    #transcription$ = this.audioToText
-      .pipe(
-        filter(() => !!this.selectedClip()?.blob),
-        map(() => this.selectedClip()?.blob as Blob),
-        switchMap((blob) => {
-          this.isTranscribing.set(true);
-          return this.transcriptionService.transcribeAudio(blob)
-            .then((topic) => topic)
-            .finally(() => this.isTranscribing.set(false));
-        }),
-        shareReplay({
-          bufferSize: 1,
-          refCount: true,
-        })
-      );
-    transcribedTopic = toSignal(this.#transcription$, { initialValue: '' });
+    isTranscribing = this.transcriptionService.isTranscribing
+    transcribedTopic = this.transcriptionService.chunk;
     transcriptionError = this.transcriptionService.error;
 
+    isTranscriptionSuccessful = computed(() => !this.isTranscribing() 
+      && !!this.transcribedTopic() 
+      && this.transcribedTopic().trim() !== ''
+    );
+
+    trimmedTopic = computed(() => this.transcribedTopic().trim());
+
     loadingImage = signal(false);
-    base64ImageData = toSignal(this.#transcription$
+    base64ImageData = toSignal(toObservable(this.isTranscriptionSuccessful)
       .pipe(
-        filter((topic) => !!topic),
-        switchMap((topic) =>  {
+        filter((isSuccess) => !!isSuccess),
+        switchMap(() =>  {
           this.loadingImage.set(true);
-          return this.firebaseService.generateImage(topic)
+          return this.firebaseService.generateImage(this.trimmedTopic())
             .catch((err) => { 
               console.log(err);
               return '';
@@ -66,13 +58,27 @@ export class AudioStoryComponent {
     destroyRef$ = inject(DestroyRef);
 
     constructor() {
-      this.#transcription$
+      this.audioToText
         .pipe(
-          filter((topic) => !!topic && topic.trim() !== ''),
-          map((topic) => topic.trim()),
+          filter(() => !!this.selectedClip()?.blob),
+          map(() => this.selectedClip()?.blob as Blob),
+          switchMap((blob) => this.transcriptionService.transcribeAudioStream(blob)),
+          takeUntilDestroyed(this.destroyRef$)
+        )
+      .subscribe();
+
+      toObservable(this.isTranscriptionSuccessful)
+        .pipe(
+          filter((isSuccess) => isSuccess),
+          map(() => this.trimmedTopic()),
           switchMap((topic) => this.storyService.makeStoryStream(topic)),  
           takeUntilDestroyed(this.destroyRef$)
         )
       .subscribe();
+    }
+
+    handleTranscription() {
+      this.audioToText.next();
+      this.transcriptionService.requestAudioToText();
     }
 }

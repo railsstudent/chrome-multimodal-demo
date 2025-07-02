@@ -73,8 +73,10 @@ export class StoryService implements OnDestroy  {
 
             const writer = this.#writer();
             if (writer) {
-                const stream =  writer.writeStreaming(`A story about ${topic}`, 
-                    { signal: this.#controller.signal })
+                const stream =  writer.writeStreaming(
+                    `A story about ${topic}`, 
+                    { signal: this.#controller.signal }
+                )
                 for await (const chunk of stream) {
                     this.#chunk.update((prevChunk) => prevChunk + chunk);
                 }

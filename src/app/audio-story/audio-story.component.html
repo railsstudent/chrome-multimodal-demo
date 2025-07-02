@@ -1,6 +1,6 @@
 @if (selectedClip(); as selectedClip) {
     <app-audio-transcriber [audioBlob]="selectedClip" 
-        (handleTranscription)="audioToText.next()" 
+        (handleTranscription)="handleTranscription()" 
         [transcription]="transcribedTopic()"
         [error]="transcriptionError()"
         [isTranscribing]="isTranscribing()"

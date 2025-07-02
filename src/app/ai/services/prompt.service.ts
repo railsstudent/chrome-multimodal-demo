@@ -11,6 +11,12 @@ export class PromptService implements OnDestroy  {
     #session = signal<LanguageModel | undefined>(undefined);
     session = this.#session.asReadonly();
 
+    #chunk = signal('');
+    chunk = this.#chunk.asReadonly();
+
+    #isTranscribing = signal(false);
+    isTranscribing = this.#isTranscribing.asReadonly();
+
     private readonly errors: Record<string, string> = {
         'InvalidStateError': 'The document is not active. Please try again later.',
         'NetworkError': 'The network is not available to download the AI model.',
@@ -47,8 +53,9 @@ export class PromptService implements OnDestroy  {
         }
     }
 
-    async transcribeAudio(audio: Blob): Promise<string> {
+    async transcribeAudioStream(audio: Blob): Promise<void> {
         this.#strError.set(''); // Clear previous error
+        this.#chunk.set('');    // clear previous chunk
 
         if (!this.#session()) {
             console.log('Initialize session.');
@@ -58,7 +65,7 @@ export class PromptService implements OnDestroy  {
         try {
             const session = this.#session();
             if (session) {
-                const responseText = await session.prompt(
+                const stream = await session.promptStreaming(
                     [{
                         role: 'user', content: [
                             {
@@ -69,20 +76,34 @@ export class PromptService implements OnDestroy  {
                                 value: audio,
                             }
                         ] 
-                    }], { signal: this.#controller.signal});
+                    }], 
+                    { signal: this.#controller.signal}
+                );
 
-                console.log('Transcription result:', responseText);
-                return responseText;
+                const self = this;
+                const reader = stream.getReader();
+                reader.read()
+                    .then(function processText({ done, value }: ReadableStreamReadResult<string>): Promise<any> {
+                        if (done) {
+                            return Promise.resolve();
+                        }
+
+                        self.#chunk.update((prevChunk) => prevChunk + value);
+                        return reader.read().then(processText);
+                    })
+                    .finally(() => self.#isTranscribing.set(false));
             } else {
                 const errorText = 'The prompt session is not initialized.';
                 console.error('The prompt session is not initialized.');
                 this.#strError.set(errorText);
-                return '';
             }
         } catch (promptError) {
             this.handleErrors(promptError);
-            return '';
         }
+    }
+
+    requestAudioToText(): void {
+        this.#isTranscribing.set(true);
     }
 
     private handleErrors(promptError: unknown) {

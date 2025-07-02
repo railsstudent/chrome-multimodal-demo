@@ -74,14 +74,6 @@ export class WebDictaphoneComponent implements OnDestroy {
     }
   }
 
-  async transcribe() {
-    if (this.selectedClip()?.blob) {
-      const blob = this.selectedClip()?.blob as Blob;
-      const text = await this.promptService.transcribeAudio(blob);
-      console.log('transcribe', text);
-    }
-  }
-
   ngOnDestroy(): void {
     this.audioClips().forEach(clip => URL.revokeObjectURL(clip.url));
   }
