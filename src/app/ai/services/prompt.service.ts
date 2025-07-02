@@ -69,7 +69,8 @@ export class PromptService implements OnDestroy  {
                                 value: audio,
                             }
                         ] 
-                    }]);
+                    }], { signal: this.#controller.signal});
+
                 console.log('Transcription result:', responseText);
                 return responseText;
             } else {
